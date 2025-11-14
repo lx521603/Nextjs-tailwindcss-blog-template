@@ -22,7 +22,7 @@ const Categories = ({ categories, currentSlug }) => {
           <Category
             key={cat}
             link={`/categories/${slugified}`}
-            name={cat}
+            name={cat}   // ✅ 显示中文原始标签
             active={currentSlug === slugified}
           />
         );

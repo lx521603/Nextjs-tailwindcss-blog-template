@@ -1,4 +1,3 @@
-// velite.config.js
 import { defineConfig, s } from 'velite'
 import GithubSlugger from 'github-slugger'
 import readingTime from 'reading-time'
@@ -6,7 +5,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
-import { pinyin } from 'pinyin-pro'   // ✅ 改用 pinyin-pro
+import { pinyin } from 'pinyin-pro'
 
 const slugger = new GithubSlugger()
 
@@ -17,22 +16,21 @@ const codeOptions = {
 
 const blog = s
   .object({
-    title: s.string(), // 保持必选
-    publishedAt: s.isodate().optional().default(() => new Date().toISOString()), // ✅ 自动生成
-    updatedAt: s.isodate().optional().default(() => new Date().toISOString()),   // ✅ 自动生成
-    description: s.string().optional(), // ✅ 非必选
-    image: s.image().optional(),        // ✅ 非必选
+    title: s.string(),
+    publishedAt: s.isodate().optional().default(() => new Date().toISOString()),
+    updatedAt: s.isodate().optional().default(() => new Date().toISOString()),
+    description: s.string().optional(),
+    image: s.image().optional(),
     isPublished: s.boolean().default(true),
-    author: s.string().optional(),      // ✅ 非必选
-    tags: s.array(s.string()).optional().default([]), // ✅ 非必选，默认空数组
+    author: s.string().optional(),
+    tags: s.array(s.string()).optional().default([]),
     body: s.mdx(),
-    toc: s.toc().optional().default([]), // ✅ 非必选，默认空数组
-    slug: s.string().optional(),         // ✅ 自动生成
+    toc: s.toc().optional().default([]),
+    slug: s.string().optional(),
   })
   .transform(data => {
     slugger.reset()
 
-    // ✅ 中文标签转拼音 slug
     const tagSlugs = (data.tags || []).map(tag => {
       if (/[\u4e00-\u9fa5]/.test(tag)) {
         return pinyin(tag, { toneType: 'none', type: 'array' }).join('-').toLowerCase()
@@ -40,14 +38,13 @@ const blog = s
       return slugger.slug(tag)
     })
 
-    // ✅ 标题 slug 也支持中文
     const titleSlug = /[\u4e00-\u9fa5]/.test(data.title)
       ? pinyin(data.title, { toneType: 'none', type: 'array' }).join('-').toLowerCase()
       : slugger.slug(data.title)
 
     return {
       ...data,
-      slug: data.slug || titleSlug, // ✅ 自动生成 slug
+      slug: data.slug || titleSlug,
       url: `/blogs/${data.slug || titleSlug}`,
       readingTime: readingTime(data.body),
       tagSlugs,
@@ -56,7 +53,7 @@ const blog = s
             ...data.image,
             src: data.image.src.replace('/static', '/blogs'),
           }
-        : null, // ✅ 防御性处理
+        : null,
     }
   })
 

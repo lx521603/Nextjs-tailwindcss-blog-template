@@ -1,79 +1,110 @@
-import { blogs as allBlogs } from "@/.velite/generated";
-import BlogLayoutThree from "@/src/components/Blog/BlogLayoutThree";
-import Categories from "@/src/components/Blog/Categories";
-import { slug } from "github-slugger";
+// app/categories/[slug]/page.tsx
+import { blogs as allBlogs } from "@/.velite/generated"
+import BlogLayoutThree from "@/src/components/Blog/BlogLayoutThree"
+import Categories from "@/src/components/Blog/Categories"
+import pinyin from 'pinyin'
 
-// const slugger = new GithubSlugger();
+// 工具函数（和 velite.config 一致）
+const getTagSlug = (tag: string): string => {
+  return pinyin(tag, {
+    style: pinyin.STYLE_NORMAL,
+    heteronym: false,
+  })
+    .join('-')
+    .toLowerCase()
+}
 
+// 预生成所有分类页（包括 "all" 和每个 tag 的拼音 slug）
 export async function generateStaticParams() {
-  const categories = [];
-  const paths = [{ slug: "all" }];
+  const paths = [{ slug: "all" }]
+  const seen = new Set<string>()
 
-  allBlogs.map((blog) => {
+  allBlogs.forEach(blog => {
     if (blog.isPublished) {
-      blog.tags.map((tag) => {
-        let slugified = slug(tag);
-        if (!categories.includes(slugified)) {
-          categories.push(slugified);
-          paths.push({ slug: slugified });
+      blog.tagSlugs.forEach(slug => {
+        if (!seen.has(slug)) {
+          seen.add(slug)
+          paths.push({ slug })
         }
-      });
+      })
     }
-  });
+  })
 
-  return paths;
+  return paths
 }
 
-export async function generateMetadata({ params }) {
-  return {
-    title: `${params.slug.replaceAll("-"," ")} Blogs`,
-    description: `Learn more about ${params.slug === "all" ? "web development" : params.slug} through our collection of expert blogs and tutorials`,
-  };
-}
-
-
-const CategoryPage = ({ params }) => {
-// Separating logic to create list of categories from all blogs
-const allCategories = ["all"]; // Initialize with 'all' category
-allBlogs.forEach(blog => {
-  blog.tags.forEach(tag => {
-    const slugified = slug(tag);
-    if (!allCategories.includes(slugified)) {
-      allCategories.push(slugified);
-    }
-  });
-});
-
-// Sort allCategories to ensure they are in alphabetical order
-allCategories.sort();
-
-// Step 2: Filter blogs based on the current category (params.slug)
-const blogs = allBlogs.filter(blog => {
+// SEO 元数据：显示中文标签名
+export async function generateMetadata({ params }: { params: { slug: string } }) {
   if (params.slug === "all") {
-    return true; // Include all blogs if 'all' category is selected
+    return {
+      title: "All Blogs",
+      description: "Explore all our expert blogs and tutorials",
+    }
   }
-  return blog.tags.some(tag => slug(tag) === params.slug);
-});
+
+  // 找第一个包含此 slug 的博客，获取原始中文 tag
+  const blogWithTag = allBlogs.find(blog =>
+    blog.tagSlugs.includes(params.slug) && blog.isPublished
+  )
+
+  const originalTag = blogWithTag
+    ? blogWithTag.tags[blogWithTag.tagSlugs.indexOf(params.slug)]
+    : params.slug
+
+  return {
+    title: `${originalTag} Blogs`,
+    description: `Learn more about ${originalTag} through our collection of expert blogs`,
+  }
+}
+
+export default function CategoryPage({ params }: { params: { slug: string } }) {
+  const currentSlug = params.slug
+
+  // 生成所有分类（用于 <Categories /> 组件）
+  const allCategories = ["all"]
+  allBlogs.forEach(blog => {
+    blog.tagSlugs.forEach(slug => {
+      if (!allCategories.includes(slug)) {
+        allCategories.push(slug)
+      }
+    })
+  })
+  allCategories.sort()
+
+  // 过滤当前分类的博客
+  const blogs = allBlogs.filter(blog => {
+    if (currentSlug === "all") return blog.isPublished
+    return blog.tagSlugs.includes(currentSlug) && blog.isPublished
+  })
+
+  // 获取当前分类的中文名称（用于 #标题）
+  const currentTagName = currentSlug === "all"
+    ? "all"
+    : allBlogs
+        .find(blog => blog.tagSlugs.includes(currentSlug))
+        ?.tags[allBlogs.find(blog => blog.tagSlugs.includes(currentSlug))!.tagSlugs.indexOf(currentSlug)]
+    || currentSlug
 
   return (
     <article className="mt-12 flex flex-col text-dark dark:text-light">
-      <div className=" px-5 sm:px-10  md:px-24  sxl:px-32 flex flex-col">
-        <h1 className="mt-6 font-semibold text-2xl md:text-4xl lg:text-5xl">#{params.slug}</h1>
+      <div className="px-5 sm:px-10 md:px-24 sxl:px-32 flex flex-col">
+        <h1 className="mt-6 font-semibold text-2xl md:text-4xl lg:text-5xl">
+          #{currentTagName}
+        </h1>
         <span className="mt-2 inline-block">
           Discover more categories and expand your knowledge!
         </span>
       </div>
-      <Categories categories={allCategories} currentSlug={params.slug} />
 
-      <div className="grid  grid-cols-1 sm:grid-cols-2  lg:grid-cols-3 grid-rows-2 gap-16 mt-5 sm:mt-10 md:mt-24 sxl:mt-32 px-5 sm:px-10 md:px-24 sxl:px-32">
+      <Categories categories={allCategories} currentSlug={currentSlug} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16 mt-5 sm:mt-10 md:mt-24 sxl:mt-32 px-5 sm:px-10 md:px-24 sxl:px-32">
         {blogs.map((blog, index) => (
-          <article key={index} className="col-span-1 row-span-1 relative">
+          <article key={blog._id || index} className="col-span-1 row-span-1 relative">
             <BlogLayoutThree blog={blog} />
           </article>
         ))}
       </div>
     </article>
-  );
-};
-
-export default CategoryPage;
+  )
+}

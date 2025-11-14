@@ -1,0 +1,51 @@
+name: Deploy Next.js (Velite) to VPS
+
+on:
+ # push:
+  #  branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/1panel/runtime/next/blog
+
+            echo "=== 停止 blog 服务 ==="
+            sudo systemctl stop blog.service || true
+
+            echo "=== 拉取最新代码 ==="
+            git pull origin main
+
+            echo "=== 清理缓存和依赖（保留 .velite） ==="
+            rm -rf .next node_modules
+
+            echo "=== 安装依赖 ==="
+            npm install
+
+            echo "=== 构建项目（Velite 会自动生成 .velite/generated） ==="
+            npm run build
+
+            echo "=== 重启 blog 服务 ==="
+            sudo systemctl restart blog.service
+
+            sleep 5
+
+            echo "=== 检查服务状态 ==="
+            sudo systemctl status blog.service --no-pager
+
+            echo "=== 测试访问 ==="
+            curl -s http://localhost:3333 | grep -o "<title>.*</title>" || echo "无法获取页面标题"
+
+            echo "✅ 部署完成"

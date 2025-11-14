@@ -5,7 +5,7 @@ import siteMetadata from "@/src/utils/siteMetaData";
 
 export const metadata = {
   title: "Contact Me",
-  description: `Contact me through the form available on this page or email me at ${siteMetadata.email}`,
+  description: `您可以通过此页面上的表格联系我，或发送电子邮件至[电子邮件地址]。 ${siteMetadata.email}`,
 };
 
 

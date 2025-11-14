@@ -1,9 +1,9 @@
-name: Deploy Next.js (Velite) to VPS
+name: Deploy Next.js (Velite) to VPS with PM2
 
 on:
- # push:
-  #  branches: ["main"]
-  workflow_dispatch:
+  push:
+    #branches: ["main"]
+  #workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -22,8 +22,8 @@ jobs:
           script: |
             cd /opt/1panel/runtime/next/blog
 
-            echo "=== 停止 blog 服务 ==="
-            sudo systemctl stop blog.service || true
+            echo "=== 停止旧的 PM2 服务（如果存在） ==="
+            pm2 stop blog || true
 
             echo "=== 拉取最新代码 ==="
             git pull origin main
@@ -34,18 +34,16 @@ jobs:
             echo "=== 安装依赖 ==="
             npm install
 
-            echo "=== 构建项目（Velite 会自动生成 .velite/generated） ==="
+            echo "=== 构建项目（Velite 自动生成 .velite/generated） ==="
             npm run build
 
-            echo "=== 重启 blog 服务 ==="
-            sudo systemctl restart blog.service
+            echo "=== 重启 PM2 服务 ==="
+            pm2 restart blog || pm2 start "npm run start -- -p 3333" --name blog
 
-            sleep 5
+            echo "=== 保存 PM2 配置，保证开机自启 ==="
+            pm2 save
 
-            echo "=== 检查服务状态 ==="
-            sudo systemctl status blog.service --no-pager
+            echo "=== 查看 PM2 状态 ==="
+            pm2 status
 
-            echo "=== 测试访问 ==="
-            curl -s http://localhost:3333 | grep -o "<title>.*</title>" || echo "无法获取页面标题"
-
-            echo "✅ 部署完成"
+            echo "✅ 部署完成，PM2 已托管 blog 服务"

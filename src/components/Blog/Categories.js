@@ -2,14 +2,15 @@
 import { slug } from "github-slugger";
 import React from "react";
 import Category from "./Category";
-import pinyin from 'pinyin';
+import { pinyin } from "pinyin-pro";  // 改用 pinyin-pro
 
 const getSlug = (tag) => {
-  return pinyin(tag, {
-    style: pinyin.STYLE_NORMAL,
-    heteronym: false,
-    segment: false
-  }).join('').toLowerCase();
+  if (/[\u4e00-\u9fa5]/.test(tag)) {
+    return pinyin(tag, { toneType: "none", type: "array" })
+      .join("-")
+      .toLowerCase();
+  }
+  return tag.toLowerCase().replace(/\s+/g, "-");
 };
 
 const Categories = ({ categories, currentSlug }) => {

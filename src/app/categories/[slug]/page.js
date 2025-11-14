@@ -1,12 +1,12 @@
-// app/categories/[slug]/page.tsx
+// app/categories/[slug]/page.js
 import { blogs as allBlogs } from "@/.velite/generated";
 import BlogLayoutThree from "@/src/components/Blog/BlogLayoutThree";
 import Categories from "@/src/components/Blog/Categories";
-import pinyin from "pinyin";
+import * as pinyin from "pinyin";
 
-// 工具函数：中文标签 → 拼音 slug（和 velite.config 保持一致）
-const getTagSlug = (tag: string): string => {
-  return pinyin(tag, {
+// 工具函数：中文 → 拼音 slug
+const getTagSlug = (tag) => {
+  return pinyin.pinyin(tag, {
     style: pinyin.STYLE_NORMAL,
     heteronym: false,
   })
@@ -14,10 +14,10 @@ const getTagSlug = (tag: string): string => {
     .toLowerCase();
 };
 
-// 预生成所有分类页（"all" + 每个 tag 的拼音 slug）
+// 预生成所有分类页
 export async function generateStaticParams() {
   const paths = [{ slug: "all" }];
-  const seen = new Set<string>();
+  const seen = new Set();
 
   allBlogs.forEach((blog) => {
     if (blog.isPublished) {
@@ -33,8 +33,8 @@ export async function generateStaticParams() {
   return paths;
 }
 
-// SEO 元数据：显示中文标签名
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+// SEO 元数据
+export async function generateMetadata({ params }) {
   if (params.slug === "all") {
     return {
       title: "All Blogs",
@@ -42,7 +42,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   }
 
-  // 找第一个包含此 slug 的博客，获取原始中文 tag
   const blogWithTag = allBlogs.find(
     (blog) => blog.tagSlugs.includes(params.slug) && blog.isPublished
   );
@@ -58,10 +57,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // 主组件
-export default function CategoryPage({ params }: { params: { slug: string } }) {
+export default function CategoryPage({ params }) {
   const currentSlug = params.slug;
 
-  // 生成所有分类（用于 <Categories /> 组件）
+  // 生成所有分类
   const allCategories = ["all"];
   allBlogs.forEach((blog) => {
     blog.tagSlugs.forEach((slug) => {
@@ -72,20 +71,20 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   });
   allCategories.sort();
 
-  // 过滤当前分类的博客
+  // 过滤博客
   const blogs = allBlogs.filter((blog) => {
     if (currentSlug === "all") return blog.isPublished;
     return blog.tagSlugs.includes(currentSlug) && blog.isPublished;
   });
 
-  // 获取当前分类的中文名称（用于 #标题）
+  // 当前标签中文名
   const currentTagName =
     currentSlug === "all"
       ? "all"
       : allBlogs
           .find((blog) => blog.tagSlugs.includes(currentSlug))
           ?.tags[
-            allBlogs.find((blog) => blog.tagSlugs.includes(currentSlug))!
+            allBlogs.find((blog) => blog.tagSlugs.includes(currentSlug))
               .tagSlugs.indexOf(currentSlug)
           ] || currentSlug;
 
@@ -100,10 +99,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         </span>
       </div>
 
-      {/* 分类导航 */}
       <Categories categories={allCategories} currentSlug={currentSlug} />
 
-      {/* 博客网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16 mt-5 sm:mt-10 md:mt-24 sxl:mt-32 px-5 sm:px-10 md:px-24 sxl:px-32">
         {blogs.map((blog, index) => (
           <article

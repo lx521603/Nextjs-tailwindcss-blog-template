@@ -8,24 +8,29 @@ const BlogLayoutTwo = ({ blog }) => {
     <div className="group grid grid-cols-12 gap-4 items-center text-dark dark:text-light">
       <Link
         href={blog.url}
-        className=" col-span-12  lg:col-span-4 h-full rounded-xl overflow-hidden"
+        className="col-span-12 lg:col-span-4 h-full rounded-xl overflow-hidden"
       >
-        <Image
-          src={blog.image.src}
-          placeholder="blur"
-          blurDataURL={blog.image.blurDataURL}
-          alt={blog.title}
-          width={blog.image.width}
-          height={blog.image.height}
-          className="aspect-square w-full h-full object-cover object-center group-hover:scale-105 transition-all ease duration-300"
-          sizes="(max-width: 640px) 100vw,(max-width: 1024px) 50vw, 33vw"
-        />
+        {blog.image && (
+          <Image
+            src={blog.image.src}
+            placeholder={blog.image.blurDataURL ? "blur" : undefined}
+            blurDataURL={blog.image.blurDataURL}
+            alt={blog.title}
+            width={blog.image.width}
+            height={blog.image.height}
+            className="aspect-square w-full h-full object-cover object-center group-hover:scale-105 transition-all ease duration-300"
+            sizes="(max-width: 640px) 100vw,(max-width: 1024px) 50vw, 33vw"
+          />
+        )}
       </Link>
 
-      <div className="col-span-12  lg:col-span-8 w-full">
-        <span className="inline-block w-full uppercase text-accent dark:text-accentDark font-semibold text-xs sm:text-sm">
-          {blog.tags[0]}
-        </span>
+      <div className="col-span-12 lg:col-span-8 w-full">
+        {blog.tags && blog.tags.length > 0 && (
+          <span className="inline-block w-full uppercase text-accent dark:text-accentDark font-semibold text-xs sm:text-sm">
+            {blog.tags[0]}
+          </span>
+        )}
+
         <Link href={blog.url} className="inline-block my-1">
           <h2 className="font-semibold capitalize text-base sm:text-lg">
             <span
@@ -37,9 +42,11 @@ const BlogLayoutTwo = ({ blog }) => {
           </h2>
         </Link>
 
-        <span className="inline-block w-full capitalize text-gray dark:text-light/50 font-semibold  text-xs sm:text-base">
-          {format(new Date(blog.publishedAt), "MMMM dd, yyyy")}
-        </span>
+        {blog.publishedAt && (
+          <span className="inline-block w-full capitalize text-gray dark:text-light/50 font-semibold text-xs sm:text-base">
+            {format(new Date(blog.publishedAt), "MMMM dd, yyyy")}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
-import pinyin from 'pinyin'  // 改用默认导入
+import { pinyin } from 'pinyin-pro'   // ✅ 改用 pinyin-pro
 
 const slugger = new GithubSlugger()
 
@@ -32,19 +32,23 @@ const blog = s
   .transform(data => {
     slugger.reset()
 
-    const tagSlugs = data.tags.map(tag =>
-      pinyin(tag, {
-        style: pinyin.STYLE_NORMAL,
-        heteronym: false,
-        segment: false  // 关键：禁用 nodejieba 分词
-      })
-        .join('')
-        .toLowerCase()
-    )
+    // ✅ 中文标签转拼音 slug
+    const tagSlugs = data.tags.map(tag => {
+      if (/[\u4e00-\u9fa5]/.test(tag)) {
+        return pinyin(tag, { toneType: 'none', type: 'array' }).join('-').toLowerCase()
+      }
+      return slugger.slug(tag)
+    })
+
+    // ✅ 标题 slug 也支持中文
+    const titleSlug = /[\u4e00-\u9fa5]/.test(data.title)
+      ? pinyin(data.title, { toneType: 'none', type: 'array' }).join('-').toLowerCase()
+      : slugger.slug(data.title)
 
     return {
       ...data,
-      url: `/blogs/${data.slug}`,
+      slug: titleSlug,
+      url: `/blogs/${titleSlug}`,
       readingTime: readingTime(data.body),
       tagSlugs,
       image: {

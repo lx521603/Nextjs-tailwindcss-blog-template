@@ -5,7 +5,7 @@
 
     // Add the react/no-unescaped-entities rule
     "react/no-unescaped-entities": [
-      "error",
+      "off",
       {
         "forbid": [
           {

@@ -2,7 +2,6 @@
 const nextConfig = {
   // 其它 Next.js 配置
   reactStrictMode: true,
-  swcMinify: true,
 
   // 构建时移除 console
   compiler: {

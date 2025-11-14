@@ -42,7 +42,7 @@ export async function generateMetadata({ params }) {
       description: blog.description,
       url: siteMetadata.siteUrl + blog.url,
       siteName: siteMetadata.title,
-      locale: "en_US",
+      locale: "zh_CN",
       type: "article",
       publishedTime: publishedAt,
       modifiedTime: modifiedAt,
@@ -132,13 +132,14 @@ export default async function BlogPage({ params }) {
       <article>
         <div className="mb-8 text-center relative w-full h-[70vh] bg-dark">
           <div className="w-full z-10 flex flex-col items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            {blog.tags && blog.tags.length > 0 && (
+            {blog.tags && blog.tags.length > 0 && blog.tagSlugs && blog.tagSlugs.length > 0 && (
               <Tag
                 name={blog.tags[0]}
-                link={`/categories/${slugify(blog.tags[0])}`}
+                link={`/categories/${blog.tagSlugs[0]}`}
                 className="px-6 text-sm py-2"
               />
             )}
+
             <h1
               className="inline-block mt-6 font-semibold capitalize text-light text-2xl md:text-3xl lg:text-5xl !leading-normal relative w-5/6"
             >

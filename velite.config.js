@@ -6,7 +6,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
-import * as pinyin from 'pinyin'
+import pinyin from 'pinyin'  // 改用默认导入
 
 const slugger = new GithubSlugger()
 
@@ -33,11 +33,12 @@ const blog = s
     slugger.reset()
 
     const tagSlugs = data.tags.map(tag =>
-      pinyin.pinyin(tag, {
+      pinyin(tag, {
         style: pinyin.STYLE_NORMAL,
         heteronym: false,
+        segment: false  // 关键：禁用 nodejieba 分词
       })
-        .join('-')
+        .join('')
         .toLowerCase()
     )
 
@@ -72,7 +73,7 @@ export default defineConfig({
     rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'append' }],
-      [rehypePrettyCode, codeOptions]  // 正确：逗号，不是冒号
+      [rehypePrettyCode, codeOptions],
     ],
   },
 })

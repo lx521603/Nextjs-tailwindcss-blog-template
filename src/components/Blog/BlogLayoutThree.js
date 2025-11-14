@@ -22,15 +22,17 @@ const BlogLayoutThree = ({ blog }) => {
       </Link>
 
       <div className="flex flex-col w-full mt-4">
-        {blog.tags && blog.tags.length > 0 && blog.tagSlugs && blog.tagSlugs.length > 0 && (
-          <Link
-            href={`/categories/${blog.tagSlugs[0]}`}
-            className="uppercase text-accent dark:text-accentDark font-semibold text-xs sm:text-sm"
-          >
-            {blog.tags[0]}
-          </Link>
-        )}
-
+        {blog.tags &&
+          blog.tags.length > 0 &&
+          blog.tagSlugs &&
+          blog.tagSlugs.length > 0 && (
+            <Link
+              href={`/categories/${blog.tagSlugs[0]}`}
+              className="uppercase text-accent dark:text-accentDark font-semibold text-xs sm:text-sm"
+            >
+              {blog.tags[0]}
+            </Link>
+          )}
 
         <Link href={blog.url} className="inline-block my-1">
           <h2 className="font-semibold capitalize text-base sm:text-lg">

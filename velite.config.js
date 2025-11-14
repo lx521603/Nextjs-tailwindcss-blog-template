@@ -5,8 +5,9 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrettyCode from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
+import pinyin from 'pinyin'  // ← 新增：中文转拼音
 
-const slugger = new GithubSlugger()   // 每个构建周期只需要一个实例
+const slugger = new GithubSlugger()
 
 const codeOptions = {
   theme: 'github-dark',
@@ -23,27 +24,26 @@ const blog = s
     image: s.image(),
     isPublished: s.boolean().default(true),
     author: s.string(),
-    tags: s.array(s.string()),          // ← 这里可以写中文
+    tags: s.array(s.string()),  // 中文标签
     body: s.mdx(),
     toc: s.toc(),
     slug: s.string(),
   })
   .transform(data => {
-    // 1. 重置 slugger，防止跨文件累计
     slugger.reset()
 
-    // 2. 为每个 tag 生成 URL-safe slug
-    const tagSlugs = data.tags.map(tag => slugger.slug(tag))
+    // ← 新增：tags 转拼音 slug（英文，便于 URL）
+    const tagSlugs = data.tags.map(tag => 
+      pinyin(tag, { 
+        style: pinyin.STYLE_NORMAL,  // 无调号，如 "qianduan"
+      }).join('-')  // 多字连字符
+    )
 
     return {
       ...data,
       url: `/blogs/${data.slug}`,
       readingTime: readingTime(data.body),
-
-      // 可选：把 tagSlugs 暴露给前端
-      tagSlugs,
-
-      // 图片路径处理（保持原样）
+      tagSlugs,  // 现在是英文拼音，如 ["qianduan", "next-js"]
       image: {
         ...data.image,
         src: data.image.src.replace('/static', '/blogs'),

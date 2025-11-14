@@ -16,14 +16,15 @@ const BlogDetails = ({ blog, slug: blogSlug }) => {
         <ViewCounter slug={blogSlug} />
       </span>
       <div className="m-3">{blog.readingTime?.text || ""}</div>
-      {blog.tags && blog.tags.length > 0 && (
+      {blog.tags && blog.tags.length > 0 && blog.tagSlugs && blog.tagSlugs.length > 0 && (
         <Link
-          href={`/categories/${slug(blog.tags[0])}`}
-          className="m-3"
+         href={`/categories/${blog.tagSlugs[0]}`}
+         className="m-3"
         >
-          #{blog.tags[0]}
+         #{blog.tags[0]}
         </Link>
       )}
+
     </div>
   );
 };

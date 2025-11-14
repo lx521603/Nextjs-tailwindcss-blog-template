@@ -17,23 +17,23 @@ const codeOptions = {
 
 const blog = s
   .object({
-    title: s.string(),
-    publishedAt: s.isodate(),
-    updatedAt: s.isodate(),
-    description: s.string(),
-    image: s.image(),
+    title: s.string(), // 保持必选
+    publishedAt: s.isodate().optional().default(() => new Date().toISOString()), // ✅ 自动生成
+    updatedAt: s.isodate().optional().default(() => new Date().toISOString()),   // ✅ 自动生成
+    description: s.string().optional(), // ✅ 非必选
+    image: s.image().optional(),        // ✅ 非必选
     isPublished: s.boolean().default(true),
-    author: s.string(),
-    tags: s.array(s.string()),
+    author: s.string().optional(),      // ✅ 非必选
+    tags: s.array(s.string()).optional().default([]), // ✅ 非必选，默认空数组
     body: s.mdx(),
-    toc: s.toc(),
-    slug: s.string(),
+    toc: s.toc().optional().default([]), // ✅ 非必选，默认空数组
+    slug: s.string().optional(),         // ✅ 自动生成
   })
   .transform(data => {
     slugger.reset()
 
     // ✅ 中文标签转拼音 slug
-    const tagSlugs = data.tags.map(tag => {
+    const tagSlugs = (data.tags || []).map(tag => {
       if (/[\u4e00-\u9fa5]/.test(tag)) {
         return pinyin(tag, { toneType: 'none', type: 'array' }).join('-').toLowerCase()
       }
@@ -47,14 +47,16 @@ const blog = s
 
     return {
       ...data,
-      slug: titleSlug,
-      url: `/blogs/${titleSlug}`,
+      slug: data.slug || titleSlug, // ✅ 自动生成 slug
+      url: `/blogs/${data.slug || titleSlug}`,
       readingTime: readingTime(data.body),
       tagSlugs,
-      image: {
-        ...data.image,
-        src: data.image.src.replace('/static', '/blogs'),
-      },
+      image: data.image
+        ? {
+            ...data.image,
+            src: data.image.src.replace('/static', '/blogs'),
+          }
+        : null, // ✅ 防御性处理
     }
   })
 

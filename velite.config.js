@@ -72,7 +72,7 @@ export default defineConfig({
     rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'append' }],
-      [rehypePrettyCode, codeOptions],  // 修复：去掉冒号
+      [rehypePrettyCode, codeOptions]  // 正确：逗号，不是冒号
     ],
   },
 })

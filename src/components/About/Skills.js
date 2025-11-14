@@ -3,7 +3,7 @@ const SkillList = [
   "tailwind css",
   "figma",
   "javaScript",
-  "旅游,
+  "旅游",
   "喝茶",
   "摄影",
   "咖啡",

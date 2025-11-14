@@ -2,15 +2,15 @@
 import { blogs as allBlogs } from "@/.velite/generated";
 import BlogLayoutThree from "@/src/components/Blog/BlogLayoutThree";
 import Categories from "@/src/components/Blog/Categories";
-import * as pinyin from "pinyin";
+import pinyin from "pinyin";  // 默认导入
 
-// 工具函数：中文 → 拼音 slug
 const getTagSlug = (tag) => {
-  return pinyin.pinyin(tag, {
+  return pinyin(tag, {
     style: pinyin.STYLE_NORMAL,
     heteronym: false,
+    segment: false  // 禁用分词
   })
-    .join("-")
+    .join("")
     .toLowerCase();
 };
 
